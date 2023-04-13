@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http"
+	"visionary-solutions-control/device"
 
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/pflag"
@@ -16,6 +17,10 @@ func main() {
 	log, logLvl := buildLogger(logLevel)
 
 	log.Info("initializing device control...")
+	manager := device.DeviceManager{
+		Log: log,
+		Lvl: logLvl,
+	}
 
 	router := gin.Default()
 
@@ -34,11 +39,16 @@ func main() {
 			return
 		}
 
-		logLvl.SetLevel(level)
+		manager.Lvl.SetLevel(level)
 		ctx.String(http.StatusOK, lvl)
 	})
 
 	router.GET("/log-level", func(ctx *gin.Context) {
-		ctx.String(http.StatusOK, log.Level().String())
+		ctx.String(http.StatusOK, manager.Log.Level().String())
 	})
+
+	err := manager.RunHTTPServer(router, port)
+	if err != nil {
+		manager.Log.Panic("http server failed")
+	}
 }
