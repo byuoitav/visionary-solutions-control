@@ -9,18 +9,34 @@ import (
 )
 
 func main() {
-	var logLevel, port string
-	pflag.StringVarP(&port, "port", "p", "", "Port on which to run the http server")
+	var logLevel, port, username, password string
+	pflag.StringVarP(&port, "port", "p", "8022", "Port on which to run the http server")
 	pflag.StringVarP(&logLevel, "log", "l", "Info", "Initial log level")
+	pflag.StringVarP(&username, "username", "", "", "Username to access decoders/encoders")
+	pflag.StringVarP(&password, "password", "", "", "Password to access decoders/encoders")
 	pflag.Parse()
 
 	log, logLvl := buildLogger(logLevel)
 
 	log.Info("initializing device control...")
-	manager := device.DeviceManager{
-		Log: log,
-		Lvl: logLvl,
+
+	queue := make(chan device.VSRequest)
+	requestManager := device.RequestManager{
+		ReqQueue: queue,
+		Log:      log,
+		Creds: device.DeviceCredentials{
+			Username: username,
+			Password: password,
+		},
 	}
+
+	deviceManager := device.DeviceManager{
+		Log:      log,
+		Lvl:      logLvl,
+		ReqQueue: queue,
+	}
+
+	go requestManager.HandleRequests()
 
 	router := gin.Default()
 
@@ -39,16 +55,16 @@ func main() {
 			return
 		}
 
-		manager.Lvl.SetLevel(level)
+		deviceManager.Lvl.SetLevel(level)
 		ctx.String(http.StatusOK, lvl)
 	})
 
 	router.GET("/log-level", func(ctx *gin.Context) {
-		ctx.String(http.StatusOK, manager.Log.Level().String())
+		ctx.String(http.StatusOK, deviceManager.Log.Level().String())
 	})
 
-	err := manager.RunHTTPServer(router, port)
+	err := deviceManager.RunHTTPServer(router, "localhost:"+port)
 	if err != nil {
-		manager.Log.Panic("http server failed")
+		deviceManager.Log.Panic("http server failed")
 	}
 }
