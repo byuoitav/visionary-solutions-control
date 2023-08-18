@@ -1,4 +1,4 @@
-module visionary-solutions-control
+module github.com/byuoitav/visionary-solutions-control
 
 go 1.20
 

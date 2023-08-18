@@ -2,7 +2,8 @@ package main
 
 import (
 	"net/http"
-	"visionary-solutions-control/device"
+
+	"github.com/byuoitav/visionary-solutions-control/device"
 
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/pflag"
