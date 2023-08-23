@@ -2,7 +2,7 @@ NAME := visionary-solutions-control
 OWNER := byuoitav
 REPO := visionary-solutions-control
 PKG := github.com/$(OWNER)/$(REPO)
-DOCKER_URL := docker.pkg.github.com
+DOCKER_URL := ghcr.io
 
 # version:
 # use the git tag, if this commit
@@ -81,7 +81,7 @@ endif
 
 deploy: docker
 	@echo Logging into Github Package Registry
-	@docker login $(DOCKER_URL) -u $(DOCKER_USERNAME) -p $(DOCKER_PASSWORD)
+	@echo $(DOCKER_PASSWORD) | docker login $(DOCKER_URL) -u $(DOCKER_USERNAME) --password-stdin
 
 ifeq ($(COMMIT_HASH),$(TAG))
 	@echo Pushing dev container with tag $(COMMIT_HASH)
@@ -104,11 +104,11 @@ else ifneq ($(shell echo $(TAG) | grep -E $(DEV_TAG_REGEX)),)
 else ifneq ($(shell echo $(TAG) | grep -E $(PRD_TAG_REGEX)),)
 	@echo Pushing prod container with tag $(TAG)
 
-	@echo Pushing container $(DOCKER_URL)/$(OWNER)/$(REPO)/$(NAME)-dev:$(TAG)
-	@docker push $(DOCKER_URL)/$(OWNER)/$(REPO)/$(NAME)-dev:$(TAG)
+	@echo Pushing container $(DOCKER_URL)/$(OWNER)/$(REPO)/$(NAME):$(TAG)
+	@docker push $(DOCKER_URL)/$(OWNER)/$(REPO)/$(NAME):$(TAG)
 
-	@echo Pushing container $(DOCKER_URL)/$(OWNER)/$(REPO)/$(NAME)-arm-dev:$(TAG)
-	@docker push $(DOCKER_URL)/$(OWNER)/$(REPO)/$(NAME)-arm-dev:$(TAG)
+	@echo Pushing container $(DOCKER_URL)/$(OWNER)/$(REPO)/$(NAME)-arm:$(TAG)
+	@docker push $(DOCKER_URL)/$(OWNER)/$(REPO)/$(NAME)-arm:$(TAG)
 
 endif
 
