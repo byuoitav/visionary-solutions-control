@@ -143,7 +143,7 @@ func (dm *DeviceManager) GetConnectedHostHandler(c *gin.Context) {
 	}
 
 	dm.Log.Debug("found the current stream host", zap.String("decoder", address), zap.String("encoder", resp.Response["STREAM.HOST"]))
-	c.JSON(http.StatusOK, resp.Response["STREAM.HOST"])
+	c.JSON(http.StatusOK, status.Input{Input: resp.Response["STREAM.HOST"]})
 }
 
 func (dm *DeviceManager) GetDeviceInfoHandler(c *gin.Context) {
@@ -233,12 +233,12 @@ func (dm *DeviceManager) GetStreamSignalHandler(c *gin.Context) {
 func (dm *DeviceManager) ConfigureDeviceHandler(c *gin.Context) {
 	dm.Log.Debug("configuring encoder")
 
-	// encoder := c.Param("encoder")
+	encoder := c.Param("encoder")
 
-	// ip := resolveIPAddress(encoder)
+	ip := resolveIPAddress(encoder)
 
-	dm.Log.Debug("")
-	c.JSON(http.StatusOK, "ok")
+	dm.Log.Debug("needed for av-api to work")
+	c.JSON(http.StatusOK, status.Input{Input: ip.IP.String()})
 }
 
 func resolveIPAddress(host string) *net.IPAddr {
