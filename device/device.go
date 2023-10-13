@@ -122,28 +122,29 @@ func (dm *DeviceManager) GetConnectedHostHandler(c *gin.Context) {
 
 	ip := resolveIPAddress(address)
 
-	cmdStr := getCommandString(GET_HOST)
+	// cmdStr := getCommandString(GET_HOST)
 
-	respChan := make(chan VSResponse)
-	defer close(respChan)
+	// respChan := make(chan VSResponse)
+	// defer close(respChan)
 
-	req := VSRequest{
-		Address:     ip.IP.String(),
-		Command:     cmdStr,
-		RespChannel: respChan,
-	}
+	// req := VSRequest{
+	// 	Address:     ip.IP.String(),
+	// 	Command:     cmdStr,
+	// 	RespChannel: respChan,
+	// }
 
-	dm.ReqQueue <- req
+	// dm.ReqQueue <- req
 
-	resp := <-respChan
-	if resp.Error != nil {
-		dm.Log.Error("failed to make request for getting the stream host", zap.Error(resp.Error))
-		c.JSON(http.StatusInternalServerError, "failed to make request to decoder")
-		return
-	}
+	// resp := <-respChan
+	// if resp.Error != nil {
+	// 	dm.Log.Error("failed to make request for getting the stream host", zap.Error(resp.Error))
+	// 	c.JSON(http.StatusInternalServerError, "failed to make request to decoder")
+	// 	return
+	// }
 
-	dm.Log.Debug("found the current stream host", zap.String("decoder", address), zap.String("encoder", resp.Response["STREAM.HOST"]))
-	c.JSON(http.StatusOK, status.Input{Input: resp.Response["STREAM.HOST"]})
+	dm.Log.Debug("found the current stream host", zap.String("decoder", address), zap.String("encoder", ip.IP.String()))
+	//resp.Response["STREAM.HOST"]
+	c.JSON(http.StatusOK, status.Input{Input: ip.IP.String()})
 }
 
 func (dm *DeviceManager) GetDeviceInfoHandler(c *gin.Context) {
