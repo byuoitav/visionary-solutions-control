@@ -23,12 +23,12 @@ func (dm *DeviceManager) RunHTTPServer(router *gin.Engine, port string) error {
 	dm.Log.Info("registering http endpoints")
 
 	dev := router.Group("")
-	dev.GET("/input/:encoder/:decoder", dm.SetStreamHostHandler) // set receiver to transmission channel
-	dev.POST("/:address/videowall", dm.SetVideoWallHandler)      // set video wall parameters
-	dev.GET("input/get/:address", dm.GetConnectedHostHandler)    // returns the current transmission channel ; N/A
-	dev.GET("/:address/hardware", dm.GetDeviceInfoHandler)       // return device details
-	dev.GET("/:address/signal", dm.GetStreamSignalHandler)       // get signal data from the device ; find a way to do this
-	dev.PUT("/configure/:encoder", dm.ConfigureDeviceHandler)    // set the transmission channel for a device ; N/A
+	dev.GET("/input/:encoder/:decoder", dm.SetStreamHostHandler)
+	dev.POST("/:address/videowall", dm.SetVideoWallHandler)
+	dev.GET("input/get/:address", dm.GetConnectedHostHandler)
+	dev.GET("/:address/hardware", dm.GetDeviceInfoHandler)
+	dev.GET("/:address/signal", dm.GetStreamSignalHandler)
+	dev.PUT("/configure/:encoder", dm.ConfigureDeviceHandler)
 
 	server := http.Server{
 		Addr:           port,
@@ -122,28 +122,8 @@ func (dm *DeviceManager) GetConnectedHostHandler(c *gin.Context) {
 
 	ip := resolveIPAddress(address)
 
-	cmdStr := getCommandString(GET_HOST)
-
-	respChan := make(chan VSResponse)
-	defer close(respChan)
-
-	req := VSRequest{
-		Address:     ip.IP.String(),
-		Command:     cmdStr,
-		RespChannel: respChan,
-	}
-
-	dm.ReqQueue <- req
-
-	resp := <-respChan
-	if resp.Error != nil {
-		dm.Log.Error("failed to make request for getting the stream host", zap.Error(resp.Error))
-		c.JSON(http.StatusInternalServerError, "failed to make request to decoder")
-		return
-	}
-
-	dm.Log.Debug("found the current stream host", zap.String("decoder", address), zap.String("encoder", resp.Response["STREAM.HOST"]))
-	c.JSON(http.StatusOK, status.Input{Input: resp.Response["STREAM.HOST"]})
+	dm.Log.Debug("found the current stream host", zap.String("decoder", address), zap.String("encoder", ip.IP.String()))
+	c.JSON(http.StatusOK, status.Input{Input: ip.IP.String()})
 }
 
 func (dm *DeviceManager) GetDeviceInfoHandler(c *gin.Context) {
