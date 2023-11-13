@@ -11,7 +11,7 @@ import (
 
 func main() {
 	var logLevel, port, username, password string
-	pflag.StringVarP(&port, "port", "p", "8022", "Port on which to run the http server")
+	pflag.StringVarP(&port, "port", "p", "8042", "Port on which to run the http server")
 	pflag.StringVarP(&logLevel, "log", "l", "Info", "Initial log level")
 	pflag.StringVarP(&username, "username", "", "", "Username to access decoders/encoders")
 	pflag.StringVarP(&password, "password", "", "", "Password to access decoders/encoders")
