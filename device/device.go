@@ -117,13 +117,34 @@ func (dm *DeviceManager) SetVideoWallHandler(c *gin.Context) {
 
 func (dm *DeviceManager) GetConnectedHostHandler(c *gin.Context) {
 	dm.Log.Debug("getting the current stream host")
-
 	address := c.Param("address")
 
 	ip := resolveIPAddress(address)
 
-	dm.Log.Debug("found the current stream host", zap.String("decoder", address), zap.String("encoder", ip.IP.String()))
-	c.JSON(http.StatusOK, status.Input{Input: ip.IP.String()})
+	cmdStr := getCommandString(GET_HOST)
+
+	respChan := make(chan VSResponse)
+	defer close(respChan)
+
+	req := VSRequest{
+		Address:     ip.IP.String(),
+		Command:     cmdStr,
+		RespChannel: respChan,
+	}
+
+	dm.ReqQueue <- req
+
+	resp := <-respChan
+	if resp.Error != nil {
+		dm.Log.Error("failed to make request for getting device details", zap.Error(resp.Error))
+		c.JSON(http.StatusInternalServerError, "failed to make request to decoder")
+		return
+	}
+
+	streamHost := resp.Response["STREAM.HOST"]
+
+	dm.Log.Debug("found the current stream host", zap.String("decoder", address), zap.String("encoder", streamHost))
+	c.JSON(http.StatusOK, status.Input{Input: streamHost})
 }
 
 func (dm *DeviceManager) GetDeviceInfoHandler(c *gin.Context) {
