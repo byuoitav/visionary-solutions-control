@@ -64,7 +64,7 @@ func main() {
 		ctx.String(http.StatusOK, deviceManager.Log.Level().String())
 	})
 
-	err := deviceManager.RunHTTPServer(router, "localhost:"+port)
+	err := deviceManager.RunHTTPServer(router, ":"+port)
 	if err != nil {
 		deviceManager.Log.Panic("http server failed")
 	}
